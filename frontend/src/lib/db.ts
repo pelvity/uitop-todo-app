@@ -26,6 +26,7 @@ export function getDb(): Database.Database {
 
   _db = new Database(getDbPath());
   _db.pragma('journal_mode = WAL');
+  _db.pragma('foreign_keys = ON');
 
   _db.exec(`
     CREATE TABLE IF NOT EXISTS categories (
@@ -51,6 +52,18 @@ export function getDb(): Database.Database {
       metadata TEXT,
       createdAt TEXT NOT NULL DEFAULT (datetime('now'))
     );
+    CREATE TABLE IF NOT EXISTS tags (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS todo_tags (
+      todoId INTEGER NOT NULL,
+      tagId INTEGER NOT NULL,
+      PRIMARY KEY (todoId, tagId),
+      FOREIGN KEY (todoId) REFERENCES todos(id) ON DELETE CASCADE,
+      FOREIGN KEY (tagId) REFERENCES tags(id) ON DELETE CASCADE
+    );
   `);
 
   const count = _db.prepare('SELECT COUNT(*) as cnt FROM categories').get() as { cnt: number };
@@ -72,5 +85,23 @@ export function mapTodo(row: Record<string, unknown>): TodoRow {
     categoryId: Number(row.categoryId),
     createdAt: row.createdAt as string,
     updatedAt: row.updatedAt as string,
+  };
+}
+
+export function getTagsForTodo(db: Database.Database, todoId: number): string[] {
+  const rows = db
+    .prepare('SELECT t.name FROM tags t JOIN todo_tags tt ON t.id = tt.tagId WHERE tt.todoId = ? ORDER BY t.name')
+    .all(todoId) as { name: string }[];
+  return rows.map((r) => r.name);
+}
+
+export interface TodoWithTags extends TodoRow {
+  tags: string[];
+}
+
+export function mapTodoWithTags(db: Database.Database, row: Record<string, unknown>): TodoWithTags {
+  return {
+    ...mapTodo(row),
+    tags: getTagsForTodo(db, Number(row.id)),
   };
 }

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Todo, Category, ActionLog } from '@/types';
+import type { Todo, Category, ActionLog, Tag } from '@/types';
 
 const api = axios.create({
   baseURL: '/api',
@@ -20,16 +20,13 @@ export const getCategories = (): Promise<Category[]> =>
 export const createCategory = (name: string): Promise<Category> =>
   api.post('/categories', { name }).then((r) => r.data);
 
-export const deleteCategory = (id: number): Promise<void> =>
-  api.delete(`/categories/${id}`).then((r) => r.data);
-
 export const getTodos = (categoryId?: number): Promise<Todo[]> =>
   api.get('/todos', { params: categoryId ? { categoryId } : {} }).then((r) => r.data);
 
-export const createTodo = (text: string, categoryId: number): Promise<Todo> =>
-  api.post('/todos', { text, categoryId }).then((r) => r.data);
+export const createTodo = (text: string, categoryId: number, tags?: string[]): Promise<Todo> =>
+  api.post('/todos', { text, categoryId, tags }).then((r) => r.data);
 
-export const updateTodo = (id: number, data: Partial<Pick<Todo, 'completed' | 'text'>>): Promise<Todo> =>
+export const updateTodo = (id: number, data: Partial<Pick<Todo, 'completed' | 'text'> & { tags: string[] }>): Promise<Todo> =>
   api.patch(`/todos/${id}`, data).then((r) => r.data);
 
 export const deleteTodo = (id: number): Promise<void> =>
@@ -40,5 +37,20 @@ export const getActionLogs = (limit: number = 50): Promise<ActionLog[]> =>
 
 export const undoActionLog = (id: number): Promise<{ todo?: Todo; message: string; actionLog: ActionLog }> =>
   api.post(`/action-logs/${id}/undo`).then((r) => r.data);
+
+export const updateCategory = (id: number, name: string): Promise<Category> =>
+  api.patch(`/categories/${id}`, { name }).then((r) => r.data);
+
+export const deleteCategory = (id: number): Promise<void> =>
+  api.delete(`/categories/${id}`).then((r) => r.data);
+
+export const getTags = (): Promise<Tag[]> =>
+  api.get('/tags').then((r) => r.data);
+
+export const createTag = (name: string): Promise<Tag> =>
+  api.post('/tags', { name }).then((r) => r.data);
+
+export const deleteTag = (id: number): Promise<void> =>
+  api.delete(`/tags/${id}`).then((r) => r.data);
 
 export default api;

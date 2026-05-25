@@ -11,6 +11,13 @@ export interface Todo {
   categoryId: number;
   createdAt: string;
   updatedAt: string;
+  tags?: string[];
+}
+
+export interface Tag {
+  id: number;
+  name: string;
+  createdAt: string;
 }
 
 export interface ActionLog {
