@@ -8,6 +8,7 @@ interface HighlightTextProps {
 }
 
 export default function HighlightText({ text, query, maxLength = 120 }: HighlightTextProps) {
+  if (!text) return null;
   if (!query.trim()) {
     if (text.length <= maxLength) return <>{text}</>;
     return <>{text.slice(0, maxLength)}...</>;

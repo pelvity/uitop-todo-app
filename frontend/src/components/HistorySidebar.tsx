@@ -129,7 +129,7 @@ export default function HistorySidebar() {
               return {
                 color: config.color,
                 dot: config.icon,
-                children: (
+                content: (
                   <>
                     <Typography.Text strong style={{ color: '#1E3A3A' }}>
                       {log.action === 'created' && `Created "${log.todoText}"`}
