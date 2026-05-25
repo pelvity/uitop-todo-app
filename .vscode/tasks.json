@@ -1,0 +1,159 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Caddy: Setup Domain",
+      "type": "shell",
+      "command": "echo '127.0.0.1 uitop.local' | sudo tee -a /etc/hosts",
+      "group": "none",
+      "detail": "Додає uitop.local → 127.0.0.1 у /etc/hosts"
+    },
+    {
+      "label": "Caddy: Run (Local Dev)",
+      "type": "shell",
+      "command": "caddy run --config Caddyfile.dev",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "none",
+      "presentation": { "panel": "dedicated", "group": "caddy" },
+      "detail": "Запуск Caddy proxy на uitop.local:80 (проксі на localhost:3002/3003)"
+    },
+    {
+    {
+      "label": "Backend: Dev",
+      "type": "shell",
+      "command": "npm run start:dev",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": { "kind": "build", "isDefault": false },
+      "presentation": { "panel": "dedicated", "group": "backend" },
+      "problemMatcher": [],
+      "detail": "Запуск backend (NestJS) у режимі watch на порті 3003"
+    },
+    {
+      "label": "Backend: Build",
+      "type": "shell",
+      "command": "npm run build",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": { "kind": "build", "isDefault": false },
+      "problemMatcher": ["$tsc"],
+      "detail": "Компіляція backend (NestJS) у dist/"
+    },
+    {
+      "label": "Backend: Test",
+      "type": "shell",
+      "command": "npm test",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": { "kind": "test", "isDefault": false },
+      "presentation": { "panel": "dedicated", "group": "backend-test" },
+      "problemMatcher": [],
+      "detail": "Запуск Jest-тестів backend (20 тестів)"
+    },
+    {
+      "label": "Backend: Test (Watch)",
+      "type": "shell",
+      "command": "npm run test:watch",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": { "kind": "test", "isDefault": false },
+      "presentation": { "panel": "dedicated", "group": "backend-test" },
+      "problemMatcher": [],
+      "detail": "Jest у watch-режимі"
+    },
+    {
+      "label": "Backend: Test (Coverage)",
+      "type": "shell",
+      "command": "npm run test:cov",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": { "kind": "test", "isDefault": false },
+      "presentation": { "panel": "dedicated", "group": "backend-test" },
+      "problemMatcher": [],
+      "detail": "Jest зі збором coverage"
+    },
+    {
+      "label": "Backend: Lint",
+      "type": "shell",
+      "command": "npm run lint",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": { "kind": "build", "isDefault": false },
+      "problemMatcher": ["$eslint-stylish"],
+      "detail": "ESLint + prettier — fix"
+    },
+    {
+      "label": "Frontend: Dev",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "group": { "kind": "build", "isDefault": false },
+      "presentation": { "panel": "dedicated", "group": "frontend" },
+      "problemMatcher": [],
+      "detail": "Запуск frontend (Next.js) на порті 3000"
+    },
+    {
+      "label": "Frontend: Build",
+      "type": "shell",
+      "command": "npm run build",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "group": { "kind": "build", "isDefault": false },
+      "problemMatcher": ["$tsc"],
+      "detail": "next build — production збірка"
+    },
+    {
+      "label": "Frontend: Test",
+      "type": "shell",
+      "command": "npm test",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "group": { "kind": "test", "isDefault": false },
+      "presentation": { "panel": "dedicated", "group": "frontend-test" },
+      "problemMatcher": [],
+      "detail": "Jest + React Testing Library (8 тестів)"
+    },
+    {
+      "label": "All: Dev (Both)",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "panel": "dedicated", "group": "all" },
+      "problemMatcher": [],
+      "detail": "concurrently — backend на :3003, frontend на :3000"
+    },
+    {
+      "label": "All: Test (Both)",
+      "type": "shell",
+      "command": "npm test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "test", "isDefault": true },
+      "presentation": { "panel": "dedicated", "group": "all-test" },
+      "problemMatcher": [],
+      "detail": "Запуск усіх тестів: backend (20) + frontend (8)"
+    },
+    {
+      "label": "Docker: Up",
+      "type": "shell",
+      "command": "docker-compose up --build",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "build", "isDefault": false },
+      "presentation": { "panel": "dedicated", "group": "docker" },
+      "problemMatcher": [],
+      "detail": "docker-compose up — front:3000, back:3031→3001"
+    },
+    {
+      "label": "Docker: Down",
+      "type": "shell",
+      "command": "docker-compose down",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "build", "isDefault": false },
+      "presentation": { "panel": "dedicated", "group": "docker" },
+      "problemMatcher": [],
+      "detail": "Зупинка контейнерів"
+    },
+    {
+      "label": "Docker: Restart",
+      "type": "shell",
+      "command": "docker-compose restart",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "build", "isDefault": false },
+      "presentation": { "panel": "dedicated", "group": "docker" },
+      "problemMatcher": [],
+      "detail": "Перезапуск контейнерів без перезбірки"
+    }
+  ]
+}

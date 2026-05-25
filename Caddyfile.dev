@@ -1,0 +1,13 @@
+# Caddyfile.dev — Local development (without Docker)
+#   echo '127.0.0.1 uitop.local' | sudo tee -a /etc/hosts
+#   caddy run --config Caddyfile.dev
+#
+# Requires frontend (npm run dev) + backend (npm run start:dev) running locally.
+
+uitop.local {
+    # Backend API (local dev port)
+    reverse_proxy /api/* localhost:3003
+
+    # Frontend (local dev port)
+    reverse_proxy localhost:3002
+}

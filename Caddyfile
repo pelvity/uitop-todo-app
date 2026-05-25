@@ -1,0 +1,21 @@
+# Caddyfile — Todo App reverse proxy (Docker mode)
+#
+#   docker-compose up --build
+#   → http://uitop.local:8080
+#
+# Setup:
+#   echo '127.0.0.1 uitop.local' | sudo tee -a /etc/hosts
+
+{
+    servers {
+        trusted_proxies static private_ranges
+    }
+}
+
+uitop.local {
+    # Backend API
+    reverse_proxy /api/* backend:3001
+
+    # Frontend (everything else)
+    reverse_proxy frontend:3000
+}

@@ -1,0 +1,15 @@
+{
+  "name": "uitop-todo-app",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,green \"cd backend && npm run start:dev\" \"cd frontend && npm run dev\"",
+    "test": "cd backend && npm test && cd ../frontend && npm test",
+    "docker:up": "docker-compose up --build",
+    "docker:down": "docker-compose down",
+    "caddy": "caddy run --config Caddyfile.dev",
+    "caddy:setup": "echo '127.0.0.1 uitop.local' | sudo tee -a /etc/hosts"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
