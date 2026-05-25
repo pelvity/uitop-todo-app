@@ -1,8 +1,7 @@
 import '@testing-library/jest-dom';
 
 // Configure act environment for React 19 tests
-global.IS_REACT_ACT_ENVIRONMENT = true;
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as unknown as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
 // Polyfill MessageChannel for antd Select in jsdom
 if (typeof globalThis.MessageChannel === 'undefined') {
