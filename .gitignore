@@ -13,8 +13,11 @@ next-env.d.ts
 
 # Data
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 backend/data/
+frontend/data/
 
 # Environment
 .env
