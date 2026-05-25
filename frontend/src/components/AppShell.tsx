@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { Layout, Typography, Flex, Skeleton, Alert, Button, Input, Card, Tag } from 'antd';
-import { SearchOutlined, CheckCircleOutlined, InboxOutlined } from '@ant-design/icons';
+import { SearchOutlined, CheckCircleOutlined, InboxOutlined, FireOutlined } from '@ant-design/icons';
 import { useTodos } from '@/context/TodoContext';
 import CreateTodoForm from '@/components/CreateTodoForm';
 import TodoList from '@/components/TodoList';
@@ -27,38 +27,41 @@ export default function AppShell() {
           type="error"
           showIcon
           action={<Button onClick={() => { fetchCategories(); fetchTodos(); }}>Retry</Button>}
-          style={{ borderRadius: 16 }}
+          style={{ borderRadius: 16, border: '2px solid #225555', boxShadow: '4px 4px 0px 0px #225555' }}
         />
       </div>
     );
   }
 
   return (
-    <Layout style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #EDF3EF 0%, #E8F0EB 50%, #E4EDE8 100%)' }}>
+    <Layout style={{ minHeight: '100vh', background: '#FAFAEE' }}>
       <Header style={{
-        background: 'linear-gradient(135deg, #1A4444 0%, #225555 60%, #2A6868 100%)',
+        background: '#FAFAEE',
         padding: '0 28px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        boxShadow: '0 2px 24px rgba(20,60,60,0.30)',
+        borderBottom: '4px solid #225555',
+        boxShadow: '0 4px 0px 0px rgba(34, 85, 85, 0.12)',
         position: 'sticky',
         top: 0,
         zIndex: 100,
-        height: 58,
+        height: 72,
       }}>
         <Flex align="center" gap={12}>
           <div style={{
-            width: 34, height: 34, borderRadius: 10,
-            background: 'rgba(255,255,255,0.13)',
+            width: 40, height: 40, borderRadius: 12,
+            background: '#225555',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            border: '1px solid rgba(255,255,255,0.18)',
+            border: '3px solid #225555',
+            boxShadow: '2px 2px 0px 0px #51463B',
           }}>
-            <InboxOutlined style={{ color: '#FFFFFF', fontSize: 17 }} />
+            <InboxOutlined style={{ color: '#FAFAEE', fontSize: 20 }} />
           </div>
           <Typography.Title level={4} style={{
-            margin: 0, color: '#FFFFFF',
-            fontSize: 17, fontWeight: 900, letterSpacing: '-0.4px',
+            margin: 0, color: '#225555',
+            fontSize: 22, fontWeight: 900, letterSpacing: '-0.3px',
+            fontFamily: "'Nunito', 'Comic Sans MS', sans-serif",
           }}>
             Todo App
           </Typography.Title>
@@ -66,9 +69,9 @@ export default function AppShell() {
         <HistorySidebar />
       </Header>
 
-      <Content style={{ maxWidth: 880, width: '100%', margin: '28px auto', padding: '0 16px' }}>
+      <Content style={{ maxWidth: 880, width: '100%', margin: '32px auto', padding: '0 16px' }}>
         {loading ? (
-          <Card style={{ borderRadius: 18, border: 'none', boxShadow: '0 2px 16px rgba(34,85,85,0.08)' }}>
+          <Card style={{ borderRadius: 20, border: '3px solid #225555', boxShadow: '6px 6px 0px 0px #225555' }}>
             <Skeleton active paragraph={{ rows: 8 }} />
           </Card>
         ) : (
@@ -76,32 +79,33 @@ export default function AppShell() {
             <Card
               style={{
                 borderRadius: 20,
-                marginBottom: 16,
-                border: '1px solid #DDE9E4',
-                boxShadow: '0 2px 12px rgba(34,85,85,0.07)',
+                marginBottom: 20,
+                border: '3px solid #225555',
+                boxShadow: '6px 6px 0px 0px #225555',
                 background: '#FFFFFF',
               }}
-              styles={{ body: { padding: '14px 16px' } }}
+              styles={{ body: { padding: '16px 20px' } }}
             >
-              <Flex gap={10} wrap="wrap" style={{ marginBottom: 12 }}>
+              <Flex gap={12} wrap="wrap" style={{ marginBottom: 16 }}>
                 <Input
                   size="large"
                   placeholder="Search tasks..."
-                  prefix={<SearchOutlined style={{ color: '#8AADA4' }} />}
+                  prefix={<SearchOutlined style={{ color: '#225555' }} />}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   allowClear
-                  variant="filled"
-                  style={{ flex: 1, minWidth: 200, borderRadius: 12, background: '#F2F7F5' }}
+                  variant="outlined"
+                  style={{ flex: 1, minWidth: 200, borderRadius: 14, border: '3px solid #225555', height: 48, fontWeight: 800 }}
                 />
                 <CategoryFilter />
               </Flex>
-              <Flex align="center" gap={12} style={{ paddingTop: 11, borderTop: '1px solid #EAF1EE' }}>
+              <Flex align="center" gap={12} wrap="wrap" style={{ paddingTop: 14, borderTop: '3px solid #225555' }}>
                 <Tag
                   icon={<InboxOutlined />}
                   style={{
-                    borderRadius: 20, padding: '2px 10px', fontSize: 13,
-                    background: '#EAF3F0', color: '#2A6060', border: 'none', fontWeight: 700, margin: 0,
+                    borderRadius: 24, padding: '4px 14px', fontSize: 14,
+                    background: '#9CD3D3', color: '#225555', border: '3px solid #225555', fontWeight: 900, margin: 0,
+                    boxShadow: '2px 2px 0px 0px #225555',
                   }}
                 >
                   &nbsp;{totalTodos} total
@@ -109,22 +113,24 @@ export default function AppShell() {
                 <Tag
                   icon={<CheckCircleOutlined />}
                   style={{
-                    borderRadius: 20, padding: '2px 10px', fontSize: 13,
-                    background: '#E6F4EC', color: '#2E7D4F', border: 'none', fontWeight: 700, margin: 0,
+                    borderRadius: 24, padding: '4px 14px', fontSize: 14,
+                    background: '#9AD69A', color: '#225555', border: '3px solid #225555', fontWeight: 900, margin: 0,
+                    boxShadow: '2px 2px 0px 0px #225555',
                   }}
                 >
                   &nbsp;{completedTodos} done
                 </Tag>
                 {activeTodos > 0 && (
                   <Tag style={{
-                    borderRadius: 20, padding: '2px 10px', fontSize: 13,
-                    background: '#FFF4E6', color: '#A05C20', border: 'none', fontWeight: 700, margin: 0,
+                    borderRadius: 24, padding: '4px 14px', fontSize: 14,
+                    background: '#F0C973', color: '#51463B', border: '3px solid #225555', fontWeight: 900, margin: 0,
+                    boxShadow: '2px 2px 0px 0px #225555',
                   }}>
                     {activeTodos} active
                   </Tag>
                 )}
                 <div style={{ marginLeft: 'auto' }}>
-                  <Typography.Text style={{ fontSize: 13, fontWeight: 700, color: progressPercent === 100 ? '#2E7D4F' : '#5A8070' }}>
+                  <Typography.Text style={{ fontSize: 15, fontWeight: 900, color: '#225555' }}>
                     {progressPercent}% complete
                   </Typography.Text>
                 </div>
@@ -140,12 +146,13 @@ export default function AppShell() {
       <Footer style={{
         textAlign: 'center',
         background: 'transparent',
-        color: '#8AADA4',
-        fontSize: 12,
-        padding: '12px 24px 20px',
-        fontWeight: 600,
+        color: '#51463B',
+        fontSize: 13,
+        padding: '16px 24px 24px',
+        fontWeight: 800,
+        fontFamily: "'Nunito', sans-serif",
       }}>
-        Todo App &mdash; NestJS + Next.js + Ant Design
+        Todo App &mdash; NestJS + Next.js + Ant Design Cartoon Style
       </Footer>
     </Layout>
   );

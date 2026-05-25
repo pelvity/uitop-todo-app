@@ -75,7 +75,8 @@ export class TodosService {
     }
 
     Object.assign(todo, dto);
-    return this.todoRepo.save(todo);
+    await this.todoRepo.save(todo);
+    return this.findOne(id);
   }
 
   async remove(id: number): Promise<void> {

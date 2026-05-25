@@ -6,7 +6,7 @@ import {
 } from 'antd';
 import {
   DeleteOutlined, CheckCircleOutlined, ClockCircleOutlined,
-  SearchOutlined, FlagOutlined,
+  SearchOutlined, FlagOutlined, SmileOutlined
 } from '@ant-design/icons';
 import type { Todo } from '@/types';
 import { useTodos } from '@/context/TodoContext';
@@ -17,11 +17,11 @@ import HighlightText from '@/components/HighlightText';
 import { TodoCard } from '@/components/TodoCard';
 
 const categoryMeta: Record<string, { color: string; bg: string; dot: string }> = {
-  Work:     { color: '#1A5C8A', bg: '#E6F2FB', dot: '#3A9AD9' },
-  Personal: { color: '#2E6E3E', bg: '#E6F5EC', dot: '#4DBF6E' },
-  Shopping: { color: '#8A4E18', bg: '#FEF2E6', dot: '#E8923A' },
+  Work:     { color: '#51463B', bg: '#9CD3D3', dot: '#225555' },
+  Personal: { color: '#51463B', bg: '#9AD69A', dot: '#225555' },
+  Shopping: { color: '#51463B', bg: '#F0C973', dot: '#225555' },
 };
-const fallbackMeta = { color: '#5058A0', bg: '#EEEEF8', dot: '#8088D4' };
+const fallbackMeta = { color: '#51463B', bg: '#E0ECEB', dot: '#225555' };
 
 export default function TodoList() {
   const {
@@ -71,17 +71,17 @@ export default function TodoList() {
 
   if (error) {
     return (
-      <Card style={{ borderRadius: 18, textAlign: 'center', border: 'none' }}>
-        <Typography.Text type="danger">{error}</Typography.Text>
+      <Card style={{ borderRadius: 20, textAlign: 'center', border: '2px solid #225555' }}>
+        <Typography.Text type="danger" style={{ fontWeight: 800 }}>{error}</Typography.Text>
         <br />
-        <Button type="link" onClick={fetchTodos}>Retry</Button>
+        <Button type="link" onClick={fetchTodos} style={{ fontWeight: 800 }}>Retry</Button>
       </Card>
     );
   }
 
   if (loading) {
     return (
-      <Card style={{ borderRadius: 18, border: 'none', boxShadow: '0 2px 16px rgba(34,85,85,0.07)' }}>
+      <Card style={{ borderRadius: 20, border: '2px solid #225555', boxShadow: '6px 6px 0px 0px #225555' }}>
         <Skeleton active paragraph={{ rows: 4 }} />
       </Card>
     );
@@ -90,25 +90,26 @@ export default function TodoList() {
   if (filteredTodos.length === 0) {
     return (
       <Card style={{
-        borderRadius: 18, textAlign: 'center', padding: 40,
-        border: '1px solid #DDE9E4',
-        boxShadow: '0 2px 12px rgba(34,85,85,0.06)',
+        borderRadius: 20, textAlign: 'center', padding: 40,
+        border: '2px dashed #225555',
+        boxShadow: '6px 6px 0px 0px #225555',
+        background: '#FFFFFF'
       }}>
         {debouncedSearch ? (
           <>
-            <SearchOutlined style={{ fontSize: 38, color: '#8AADA4', marginBottom: 12 }} />
-            <Typography.Text type="secondary" style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>
+            <SearchOutlined style={{ fontSize: 48, color: '#225555', marginBottom: 16 }} />
+            <Typography.Text type="secondary" style={{ display: 'block', fontSize: 18, fontWeight: 800 }}>
               No tasks match &quot;{debouncedSearch}&quot;
             </Typography.Text>
           </>
         ) : (
           <>
-            <FlagOutlined style={{ fontSize: 38, color: '#B8CFC8', marginBottom: 12 }} />
-            <Typography.Text strong style={{ display: 'block', fontSize: 15, color: '#3A6060' }}>
-              No tasks yet
-            </Typography.Text>
-            <Typography.Text type="secondary" style={{ marginTop: 4, display: 'block' }}>
-              Add your first task above!
+            <SmileOutlined style={{ fontSize: 48, color: '#9CD3D3', marginBottom: 16 }} />
+            <Typography.Title level={4} style={{ display: 'block', color: '#51463B', fontWeight: 900 }}>
+              You are all caught up!
+            </Typography.Title>
+            <Typography.Text style={{ marginTop: 8, display: 'block', fontSize: 16, fontWeight: 700, color: '#51463B' }}>
+              Add a new task above to get started.
             </Typography.Text>
           </>
         )}
@@ -118,27 +119,31 @@ export default function TodoList() {
 
   return (
     <Card style={{
-      borderRadius: 18,
+      borderRadius: 20,
       marginTop: 0,
-      border: '1px solid #DDE9E4',
-      boxShadow: '0 2px 12px rgba(34,85,85,0.06)',
+      border: '2px solid #225555',
+      boxShadow: '6px 6px 0px 0px #225555',
+      background: '#FAFAEE',
     }}>
-      <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
-        <Flex align="center" gap={10}>
+      <Flex justify="space-between" align="center" style={{ marginBottom: 20 }}>
+        <Flex align="center" gap={12}>
           <div style={{
-            width: 30, height: 30, borderRadius: 9,
-            background: 'linear-gradient(135deg, #1A4444 0%, #225555 100%)',
+            width: 36, height: 36, borderRadius: 12,
+            background: '#FFFFFF',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: '2px solid #225555',
+            boxShadow: '2px 2px 0px 0px #225555',
+            transform: 'rotate(-5deg)',
           }}>
-            <FlagOutlined style={{ color: '#FFFFFF', fontSize: 14 }} />
+            <FlagOutlined style={{ color: '#51463B', fontSize: 18 }} />
           </div>
-          <Typography.Title level={4} style={{ margin: 0, fontWeight: 800, color: '#1E3A3A', fontSize: 16 }}>
+          <Typography.Title level={4} style={{ margin: 0, fontWeight: 900, color: '#51463B', fontSize: 18 }}>
             Tasks
           </Typography.Title>
           <Tag style={{
-            borderRadius: 20, margin: 0, fontWeight: 800, fontSize: 12,
+            borderRadius: 24, margin: 0, fontWeight: 900, fontSize: 14,
             background: '#225555', color: '#FFFFFF', border: 'none',
-            padding: '0 8px', lineHeight: '22px',
+            padding: '2px 10px', lineHeight: '22px',
           }}>
             {filteredTodos.length}
           </Tag>
@@ -149,11 +154,11 @@ export default function TodoList() {
             checked={selectedTodoIds.size === filteredTodos.length && filteredTodos.length > 0}
             onChange={toggleSelectAll}
           >
-            <Typography.Text style={{ fontSize: 13, color: '#6A8A84', fontWeight: 600 }}>Select All</Typography.Text>
+            <Typography.Text style={{ fontSize: 14, color: '#51463B', fontWeight: 800 }}>Select All</Typography.Text>
           </Checkbox>
           {selectedTodoIds.size > 0 && (
             <>
-              <Typography.Text style={{ color: '#225555', fontWeight: 700, fontSize: 13 }}>
+              <Typography.Text style={{ color: '#225555', fontWeight: 900, fontSize: 14 }}>
                 {selectedTodoIds.size} selected
               </Typography.Text>
               <Button
@@ -169,11 +174,11 @@ export default function TodoList() {
                     });
                   }
                 }}
-                style={{ borderRadius: 20, fontWeight: 700, fontSize: 13 }}
+                style={{ borderRadius: 20, fontWeight: 900, fontSize: 13, border: '2px solid #225555' }}
               >
                 Complete
               </Button>
-              <Button type="link" size="small" onClick={clearSelection} style={{ color: '#C86060', fontWeight: 700, padding: 0 }}>
+              <Button type="link" size="small" onClick={clearSelection} style={{ color: '#DA8787', fontWeight: 900, padding: 0 }}>
                 Clear
               </Button>
             </>
@@ -181,7 +186,7 @@ export default function TodoList() {
         </Space>
       </Flex>
 
-      <Row gutter={[12, 12]}>
+      <Row gutter={[16, 16]}>
         {filteredTodos.map((todo, idx) => (
           <Col xs={24} sm={12} key={todo.id}>
             <TodoCard

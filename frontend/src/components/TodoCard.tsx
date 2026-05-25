@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Card, Checkbox, Button, Typography, Flex } from 'antd';
+import { Card, Checkbox, Button, Typography, Flex, Tag } from 'antd';
 import {
   DeleteOutlined, CheckCircleOutlined, ClockCircleOutlined,
 } from '@ant-design/icons';
@@ -29,37 +29,32 @@ const TodoCardComponent = ({
   const isCompleted = todo.completed;
 
   return (
-    <div className="todo-card" style={{ animationDelay: `${idx * 25}ms` }}>
+    <div className="todo-card" style={{ animationDelay: `${idx * 25}ms`, transition: 'transform 0.2s', transform: isCompleted ? 'scale(0.98)' : 'scale(1)' }}>
       <div className="todo-card-inner">
         <Card
           size="small"
           style={{
-            borderRadius: 14,
-            border: isCompleted
-              ? '1px solid #EEF0EE'
-              : '1px solid #DDE9E4',
-            borderLeft: isCompleted
-              ? '3px solid #D0D8D4'
-              : `3px solid ${categoryMeta.dot}`,
-            background: isCompleted ? '#F8FAF9' : '#FFFFFF',
+            borderRadius: 16,
+            border: '2px solid #225555',
+            background: isCompleted ? '#E0ECEB' : categoryMeta.bg,
             boxShadow: isCompleted
               ? 'none'
-              : '0 1px 4px rgba(34,85,85,0.05), 0 4px 12px rgba(34,85,85,0.05)',
-            opacity: isCompleted ? 0.7 : 1,
+              : '4px 4px 0px 0px #225555',
+            opacity: isCompleted ? 0.8 : 1,
             transition: 'all 0.22s ease',
           }}
-          styles={{ body: { padding: '12px 14px 0' } }}
+          styles={{ body: { padding: '16px' } }}
           actions={[
             <Button
               key="complete"
               type="text"
               size="small"
               icon={isCompleted
-                ? <ClockCircleOutlined style={{ color: '#8AADA4' }} />
-                : <CheckCircleOutlined style={{ color: '#2E7D4F' }} />
+                ? <ClockCircleOutlined style={{ color: '#51463B' }} />
+                : <CheckCircleOutlined style={{ color: '#225555' }} />
               }
               onClick={() => onToggleComplete(todo)}
-              style={{ color: isCompleted ? '#8AADA4' : '#2E7D4F', fontWeight: 700, fontSize: 13 }}
+              style={{ color: isCompleted ? '#51463B' : '#225555', fontWeight: 900, fontSize: 14 }}
             >
               {isCompleted ? 'Reopen' : 'Complete'}
             </Button>,
@@ -70,43 +65,40 @@ const TodoCardComponent = ({
               danger
               icon={<DeleteOutlined />}
               onClick={() => onDelete(todo)}
-              style={{ color: '#C86060', fontWeight: 700, fontSize: 13 }}
+              style={{ color: '#DA8787', fontWeight: 900, fontSize: 14 }}
             >
               Delete
             </Button>,
           ]}
         >
-          <Flex gap={10} align="flex-start">
+          <Flex gap={12} align="flex-start">
             <Checkbox
               checked={isCompleted}
               onChange={() => onToggleComplete(todo)}
-              style={{ marginTop: 2 }}
+              style={{ marginTop: 2, transform: 'scale(1.2)' }}
             />
             <div style={{ flex: 1, minWidth: 0 }}>
               <Typography.Text style={{
                 textDecoration: isCompleted ? 'line-through' : 'none',
-                color: isCompleted ? '#A8BAB4' : '#1E3A3A',
-                fontSize: 14,
-                fontWeight: isCompleted ? 500 : 700,
+                color: isCompleted ? '#8AADA4' : '#225555',
+                fontSize: 16,
+                fontWeight: isCompleted ? 700 : 900,
                 transition: 'all 0.25s ease',
                 display: 'block',
-                lineHeight: 1.45,
+                lineHeight: 1.4,
                 wordBreak: 'break-word',
               }}>
                 <HighlightText text={todo.text} query={debouncedSearch} maxLength={100} />
               </Typography.Text>
-              <Flex align="center" gap={6} style={{ marginTop: 6, marginBottom: 2 }}>
-                <span style={{
-                  width: 7, height: 7, borderRadius: '50%',
-                  background: isCompleted ? '#C8D8D0' : categoryMeta.dot,
-                  display: 'inline-block', flexShrink: 0,
-                }} />
-                <Typography.Text style={{
-                  fontSize: 12, fontWeight: 700,
-                  color: isCompleted ? '#A8BAB4' : categoryMeta.color,
+              <Flex align="center" gap={6} style={{ marginTop: 12 }}>
+                <Tag style={{
+                  borderRadius: 24, margin: 0, fontWeight: 900, fontSize: 12,
+                  background: isCompleted ? '#C8DAD4' : '#FFFFFF', color: '#51463B',
+                  border: '2px solid #225555', padding: '0 10px',
+                  boxShadow: '1px 1px 0px 0px #225555'
                 }}>
                   {categoryName}
-                </Typography.Text>
+                </Tag>
               </Flex>
             </div>
           </Flex>

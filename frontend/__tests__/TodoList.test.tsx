@@ -37,7 +37,7 @@ describe('TodoList', () => {
     render(<TodoList />, { wrapper: TestWrapper });
 
     await waitFor(() => {
-      expect(screen.getByText('No tasks yet')).toBeInTheDocument();
+      expect(screen.getByText('You are all caught up!')).toBeInTheDocument();
     });
   });
 

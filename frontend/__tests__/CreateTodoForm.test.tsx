@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from 'antd';
 import { TodoProvider } from '@/context/TodoContext';
@@ -57,10 +57,15 @@ describe('CreateTodoForm', () => {
     const selectInput = screen.getByRole('combobox');
     const selectContainer = selectInput.closest('.ant-select')!;
     const mouseDownEvent = new MouseEvent('mousedown', { bubbles: true });
-    selectContainer.dispatchEvent(mouseDownEvent);
+    
+    await act(async () => {
+      selectContainer.dispatchEvent(mouseDownEvent);
+    });
 
     const workOption = await screen.findByText('Work');
-    await user.click(workOption);
+    await act(async () => {
+      await user.click(workOption);
+    });
 
     await user.click(screen.getByRole('button', { name: /add task/i }));
 

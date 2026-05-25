@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from 'antd';
 import { TodoProvider } from '@/context/TodoContext';
@@ -31,7 +31,10 @@ describe('CategoryFilter', () => {
 
     const selectInput = screen.getByRole('combobox');
     const selectContainer = selectInput.closest('.ant-select')!;
-    selectContainer.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    
+    await act(async () => {
+      selectContainer.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    });
 
     await waitFor(() => {
       const optionItems = document.querySelectorAll('.ant-select-item-option-content');
@@ -52,10 +55,15 @@ describe('CategoryFilter', () => {
     const user = userEvent.setup();
     const selectInput = screen.getByRole('combobox');
     const selectContainer = selectInput.closest('.ant-select')!;
-    selectContainer.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    
+    await act(async () => {
+      selectContainer.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    });
 
     const workOption = await screen.findByText('Work');
-    await user.click(workOption);
+    await act(async () => {
+      await user.click(workOption);
+    });
 
     await waitFor(() => {
       expect(jest.mocked(api.getTodos)).toHaveBeenCalledWith(1);
