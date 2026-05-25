@@ -1,11 +1,12 @@
 'use client';
 import React from 'react';
-import { Card, Input, Select, Button, Typography, message, Flex } from 'antd';
-import { PlusOutlined, EditOutlined } from '@ant-design/icons';
+import { Card, Input, Select, Button, Typography, message, Flex, Tag } from 'antd';
+import { PlusOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTodos } from '@/context/TodoContext';
+import CategoryManager from '@/components/CategoryManager';
 
 const schema = z.object({
   text: z.string().min(1, 'Text is required').max(255, 'Max 255 characters'),
@@ -17,6 +18,8 @@ type FormData = z.infer<typeof schema>;
 export default function CreateTodoForm() {
   const { categories, createTodo } = useTodos();
   const [loading, setLoading] = React.useState(false);
+  const [tagsInput, setTagsInput] = React.useState<string[]>([]);
+  const [catManagerOpen, setCatManagerOpen] = React.useState(false);
 
   const {
     control, handleSubmit, reset, watch,
@@ -31,8 +34,9 @@ export default function CreateTodoForm() {
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     try {
-      await createTodo(data.text, data.categoryId);
+      await createTodo(data.text, data.categoryId, tagsInput);
       reset();
+      setTagsInput([]);
       message.success({ content: 'Task created!', style: { borderRadius: 12, border: '2px solid #225555' } });
     } catch (err) {
       message.error(err instanceof Error ? err.message : 'Failed to create task');
@@ -116,11 +120,50 @@ export default function CreateTodoForm() {
                 />
               )}
             />
-            {errors.categoryId && (
+              {errors.categoryId && (
               <Typography.Text type="danger" style={{ fontSize: 13, fontWeight: 800, display: 'block', marginTop: 6 }}>
                 {errors.categoryId.message}
               </Typography.Text>
             )}
+            <Button
+              type="link"
+              size="small"
+              icon={<SettingOutlined />}
+              onClick={() => setCatManagerOpen(true)}
+              style={{
+                marginTop: 8, padding: 0, fontWeight: 900, color: '#51463B',
+                fontSize: 13,
+              }}
+            >
+              Manage categories
+            </Button>
+          </div>
+
+          <div style={{ minWidth: 160 }}>
+            <Select
+              id="tags-input"
+              mode="tags"
+              placeholder="Add tags..."
+              size="large"
+              style={{ width: '100%', borderRadius: 14 }}
+              value={tagsInput}
+              onChange={setTagsInput}
+              tokenSeparators={[',', ' ', ';']}
+              tagRender={(props) => (
+                <Tag
+                  closable={props.closable}
+                  onClose={props.onClose}
+                  style={{
+                    borderRadius: 24, fontWeight: 900, fontSize: 12,
+                    background: '#F0C973', color: '#51463B',
+                    border: '2px solid #225555', margin: '2px 4px 2px 0',
+                    padding: '0 8px',
+                  }}
+                >
+                  {props.label}
+                </Tag>
+              )}
+            />
           </div>
 
           <Button
@@ -143,6 +186,7 @@ export default function CreateTodoForm() {
           </Button>
         </Flex>
       </form>
+      <CategoryManager open={catManagerOpen} onClose={() => setCatManagerOpen(false)} />
     </Card>
   );
 }

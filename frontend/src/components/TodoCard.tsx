@@ -90,7 +90,7 @@ const TodoCardComponent = ({
               }}>
                 <HighlightText text={todo.text} query={debouncedSearch} maxLength={100} />
               </Typography.Text>
-              <Flex align="center" gap={6} style={{ marginTop: 12 }}>
+              <Flex align="center" gap={6} style={{ marginTop: 12, flexWrap: 'wrap' }}>
                 <Tag style={{
                   borderRadius: 24, margin: 0, fontWeight: 900, fontSize: 12,
                   background: isCompleted ? '#C8DAD4' : '#FFFFFF', color: '#51463B',
@@ -99,6 +99,15 @@ const TodoCardComponent = ({
                 }}>
                   {categoryName}
                 </Tag>
+                {todo.tags?.map((t) => (
+                  <Tag key={t} style={{
+                    borderRadius: 24, margin: 0, fontWeight: 700, fontSize: 11,
+                    background: isCompleted ? '#E8D4C8' : '#F0C973', color: '#51463B',
+                    border: '2px solid #225555', padding: '0 8px',
+                  }}>
+                    #{t}
+                  </Tag>
+                ))}
               </Flex>
             </div>
           </Flex>
@@ -114,6 +123,7 @@ export const TodoCard = React.memo(TodoCardComponent, (prevProps, nextProps) => 
     prevProps.todo.completed === nextProps.todo.completed &&
     prevProps.todo.text === nextProps.todo.text &&
     prevProps.todo.categoryId === nextProps.todo.categoryId &&
+    prevProps.todo.tags?.join(',') === nextProps.todo.tags?.join(',') &&
     prevProps.debouncedSearch === nextProps.debouncedSearch &&
     prevProps.categoryName === nextProps.categoryName &&
     prevProps.categoryMeta.dot === nextProps.categoryMeta.dot &&

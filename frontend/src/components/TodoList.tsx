@@ -66,7 +66,11 @@ export default function TodoList() {
   const filteredTodos = React.useMemo(() => {
     if (!debouncedSearch.trim()) return todos;
     const q = debouncedSearch.toLowerCase();
-    return todos.filter((t) => t.text.toLowerCase().includes(q));
+    return todos.filter((t) => {
+      if (t.text.toLowerCase().includes(q)) return true;
+      if (t.tags?.some((tag) => tag.toLowerCase().includes(q))) return true;
+      return false;
+    });
   }, [todos, debouncedSearch]);
 
   if (error) {
