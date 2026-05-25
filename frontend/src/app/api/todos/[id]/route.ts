@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, mapTodo } from '@/lib/db';
+import { getDb, mapTodoWithTags } from '@/lib/db';
 
 export async function PATCH(
   request: NextRequest,
@@ -31,14 +31,32 @@ export async function PATCH(
       values.push(body.text.trim());
     }
 
-    if (updates.length === 0) {
-      return NextResponse.json(mapTodo(todo));
+    if (updates.length === 0 && body.tags === undefined) {
+      return NextResponse.json(mapTodoWithTags(db, todo));
     }
 
-    updates.push("updatedAt = datetime('now')");
-    values.push(todoId);
+    if (updates.length > 0) {
+      updates.push("updatedAt = datetime('now')");
+      values.push(todoId);
+      db.prepare(`UPDATE todos SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+    }
 
-    db.prepare(`UPDATE todos SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+    if (Array.isArray(body.tags)) {
+      db.prepare('DELETE FROM todo_tags WHERE todoId = ?').run(todoId);
+      const insertTag = db.prepare('INSERT OR IGNORE INTO tags (name) VALUES (?)');
+      const insertTodoTag = db.prepare('INSERT OR IGNORE INTO todo_tags (todoId, tagId) VALUES (?, ?)');
+      const getTag = db.prepare('SELECT id FROM tags WHERE name = ?');
+      for (const tagName of body.tags) {
+        if (typeof tagName === 'string' && tagName.trim().length > 0) {
+          const normalized = tagName.trim().toLowerCase().replace(/\s+/g, '-');
+          insertTag.run(normalized);
+          const tagRow = getTag.get(normalized) as { id: number } | undefined;
+          if (tagRow) {
+            insertTodoTag.run(todoId, tagRow.id);
+          }
+        }
+      }
+    }
 
     const updated = db.prepare('SELECT * FROM todos WHERE id = ?').get(todoId) as Record<string, unknown>;
 
@@ -49,7 +67,7 @@ export async function PATCH(
       ).run(body.completed ? 'completed' : 'uncompleted', todoId, todo.text as string, categoryName);
     }
 
-    return NextResponse.json(mapTodo(updated));
+    return NextResponse.json(mapTodoWithTags(db, updated));
   } catch (err) {
     return NextResponse.json(
       { message: err instanceof Error ? err.message : 'Failed to update todo' },
