@@ -1,22 +1,20 @@
 'use client';
-import React from 'react';
-import { Layout, Typography, Flex, Skeleton, Alert, Button, Input, Card, Tag } from 'antd';
-import { SearchOutlined, CheckCircleOutlined, InboxOutlined, FireOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Layout, Typography, Flex, Skeleton, Alert, Button, Card } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
 import { useTodos } from '@/context/TodoContext';
 import CreateTodoForm from '@/components/CreateTodoForm';
 import TodoList from '@/components/TodoList';
-import CategoryFilter from '@/components/CategoryFilter';
-import HistorySidebar from '@/components/HistorySidebar';
+import BottomNav from '@/components/BottomNav';
+import HistoryPage from '@/components/HistoryPage';
 
-const { Header, Content, Footer } = Layout;
+const { Header, Content } = Layout;
+
+type Tab = 'main' | 'history';
 
 export default function AppShell() {
-  const { loading, error, fetchTodos, fetchCategories, searchQuery, setSearchQuery, todos } = useTodos();
-
-  const totalTodos = todos.length;
-  const completedTodos = todos.filter((t) => t.completed).length;
-  const activeTodos = totalTodos - completedTodos;
-  const progressPercent = totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0;
+  const { loading, error, fetchTodos, fetchCategories } = useTodos();
+  const [activeTab, setActiveTab] = useState<Tab>('main');
 
   if (error && !loading) {
     return (
@@ -40,7 +38,6 @@ export default function AppShell() {
         padding: '0 28px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
         borderBottom: '4px solid #225555',
         boxShadow: '0 4px 0px 0px rgba(34, 85, 85, 0.12)',
         position: 'sticky',
@@ -66,94 +63,26 @@ export default function AppShell() {
             Todo App
           </Typography.Title>
         </Flex>
-        <HistorySidebar />
       </Header>
 
-      <Content style={{ maxWidth: 880, width: '100%', margin: '32px auto', padding: '0 16px' }}>
-        {loading ? (
-          <Card style={{ borderRadius: 20, border: '3px solid #225555', boxShadow: '6px 6px 0px 0px #225555' }}>
-            <Skeleton active paragraph={{ rows: 8 }} />
-          </Card>
-        ) : (
-          <>
-            <Card
-              style={{
-                borderRadius: 20,
-                marginBottom: 20,
-                border: '3px solid #225555',
-                boxShadow: '6px 6px 0px 0px #225555',
-                background: '#FFFFFF',
-              }}
-              styles={{ body: { padding: '16px 20px' } }}
-            >
-              <Flex gap={12} wrap="wrap" style={{ marginBottom: 16 }}>
-                <Input
-                  size="large"
-                  placeholder="Search tasks..."
-                  prefix={<SearchOutlined style={{ color: '#225555' }} />}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  allowClear
-                  variant="outlined"
-                  style={{ flex: 1, minWidth: 200, borderRadius: 14, border: '3px solid #225555', height: 48, fontWeight: 800 }}
-                />
-                <CategoryFilter />
-              </Flex>
-              <Flex align="center" gap={12} wrap="wrap" style={{ paddingTop: 14, borderTop: '3px solid #225555' }}>
-                <Tag
-                  icon={<InboxOutlined />}
-                  style={{
-                    borderRadius: 24, padding: '4px 14px', fontSize: 14,
-                    background: '#9CD3D3', color: '#225555', border: '3px solid #225555', fontWeight: 900, margin: 0,
-                    boxShadow: '2px 2px 0px 0px #225555',
-                  }}
-                >
-                  &nbsp;{totalTodos} total
-                </Tag>
-                <Tag
-                  icon={<CheckCircleOutlined />}
-                  style={{
-                    borderRadius: 24, padding: '4px 14px', fontSize: 14,
-                    background: '#9AD69A', color: '#225555', border: '3px solid #225555', fontWeight: 900, margin: 0,
-                    boxShadow: '2px 2px 0px 0px #225555',
-                  }}
-                >
-                  &nbsp;{completedTodos} done
-                </Tag>
-                {activeTodos > 0 && (
-                  <Tag style={{
-                    borderRadius: 24, padding: '4px 14px', fontSize: 14,
-                    background: '#F0C973', color: '#51463B', border: '3px solid #225555', fontWeight: 900, margin: 0,
-                    boxShadow: '2px 2px 0px 0px #225555',
-                  }}>
-                    {activeTodos} active
-                  </Tag>
-                )}
-                <div style={{ marginLeft: 'auto' }}>
-                  <Typography.Text style={{ fontSize: 15, fontWeight: 900, color: '#225555' }}>
-                    {progressPercent}% complete
-                  </Typography.Text>
-                </div>
-              </Flex>
+      <Content style={{ maxWidth: 880, width: '100%', margin: '24px auto 0', padding: '0 16px 100px' }}>
+        {activeTab === 'main' ? (
+          loading ? (
+            <Card style={{ borderRadius: 20, border: '3px solid #225555', boxShadow: '6px 6px 0px 0px #225555' }}>
+              <Skeleton active paragraph={{ rows: 8 }} />
             </Card>
-
-            <CreateTodoForm />
-            <TodoList />
-          </>
+          ) : (
+            <>
+              <CreateTodoForm />
+              <TodoList />
+            </>
+          )
+        ) : (
+          <HistoryPage />
         )}
       </Content>
 
-      <Footer style={{
-        textAlign: 'center',
-        background: 'transparent',
-        color: '#51463B',
-        fontSize: 13,
-        padding: '16px 24px 24px',
-        fontWeight: 800,
-        fontFamily: "'Nunito', sans-serif",
-      }}>
-        Todo App &mdash; NestJS + Next.js + Ant Design Cartoon Style
-      </Footer>
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </Layout>
   );
 }

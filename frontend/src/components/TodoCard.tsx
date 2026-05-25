@@ -13,6 +13,8 @@ interface TodoCardProps {
   categoryMeta: { color: string; bg: string; dot: string };
   debouncedSearch: string;
   categoryName: string;
+  isSelected: boolean;
+  onToggleSelect: (id: number) => void;
   onToggleComplete: (todo: Todo) => void;
   onDelete: (todo: Todo) => void;
 }
@@ -23,6 +25,8 @@ const TodoCardComponent = ({
   categoryMeta,
   debouncedSearch,
   categoryName,
+  isSelected,
+  onToggleSelect,
   onToggleComplete,
   onDelete,
 }: TodoCardProps) => {
@@ -73,8 +77,8 @@ const TodoCardComponent = ({
         >
           <Flex gap={12} align="flex-start">
             <Checkbox
-              checked={isCompleted}
-              onChange={() => onToggleComplete(todo)}
+              checked={isSelected}
+              onChange={() => onToggleSelect(todo.id)}
               style={{ marginTop: 2, transform: 'scale(1.2)' }}
             />
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -126,6 +130,7 @@ export const TodoCard = React.memo(TodoCardComponent, (prevProps, nextProps) => 
     prevProps.todo.tags?.join(',') === nextProps.todo.tags?.join(',') &&
     prevProps.debouncedSearch === nextProps.debouncedSearch &&
     prevProps.categoryName === nextProps.categoryName &&
+    prevProps.isSelected === nextProps.isSelected &&
     prevProps.categoryMeta.dot === nextProps.categoryMeta.dot &&
     prevProps.categoryMeta.color === nextProps.categoryMeta.color
   );

@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Todo App User Scenarios', () => {
   test.beforeEach(async ({ page, request }) => {
-    await request.delete('/api/todos');
-    await request.delete('/api/action-logs');
+    await request.delete('http://127.0.0.1:3005/api/todos');
+    await request.delete('http://127.0.0.1:3005/api/action-logs');
     await page.goto('/');
   });
 
@@ -40,11 +40,11 @@ test.describe('Todo App User Scenarios', () => {
     const cards = page.locator('.todo-card');
     const count = await cards.count();
     for (let i = 0; i < count; i++) {
-      await expect(cards.nth(i).locator('.ant-tag')).toContainText('Personal');
+      await expect(cards.nth(i).locator('.ant-tag').first()).toContainText('Personal');
     }
   });
 
-  test('should show created and completed actions in history sidebar', async ({ page }) => {
+  test('should show created and completed actions in history tab', async ({ page }) => {
     const taskName = `History Test ${Date.now()}`;
 
     await page.fill('input[placeholder="What needs to be done?"]', taskName);
@@ -57,17 +57,14 @@ test.describe('Todo App User Scenarios', () => {
     await expect(page.locator('.todo-card', { hasText: taskName }).locator('button:has-text("Reopen")')).toBeVisible();
 
     await page.click('button:has-text("History")');
-    await expect(page.locator('.ant-drawer')).toBeVisible();
-    await expect(page.locator('.ant-drawer')).toContainText('Action History');
+    await expect(page.locator('text=Action History')).toBeVisible();
     await page.waitForTimeout(1500);
 
-    await expect(page.locator('.ant-drawer')).toContainText(`Created "${taskName}"`);
-    await expect(page.locator('.ant-drawer')).toContainText(`Completed "${taskName}"`);
-
-    await page.goto('/');
+    await expect(page.getByText(new RegExp(`Created "${taskName}"`))).toBeVisible();
+    await expect(page.getByText(new RegExp(`Completed "${taskName}"`))).toBeVisible();
   });
 
-  test('should undo completion from history sidebar', async ({ page }) => {
+  test('should undo completion from history tab', async ({ page }) => {
     const taskName = `Undo Complete ${Date.now()}`;
 
     await page.fill('input[placeholder="What needs to be done?"]', taskName);
@@ -81,19 +78,18 @@ test.describe('Todo App User Scenarios', () => {
     await expect(card.locator('button:has-text("Reopen")')).toBeVisible();
 
     await page.click('button:has-text("History")');
-    await expect(page.locator('.ant-drawer')).toBeVisible();
+    await expect(page.locator('text=Action History')).toBeVisible();
     await page.waitForTimeout(1500);
 
     const completedItem = page.locator('.ant-timeline-item', { hasText: `Completed "${taskName}"` });
     await expect(completedItem).toBeVisible();
     await completedItem.locator('button:has-text("Undo")').click();
+    await page.locator('button:has-text("Main")').click();
 
-    await page.waitForTimeout(500);
-    await page.goto('/');
     await expect(page.locator('.todo-card', { hasText: taskName }).locator('button:has-text("Complete")')).toBeVisible();
   });
 
-  test('should undo deletion from history sidebar with confirmation modal', async ({ page }) => {
+  test('should undo deletion from history tab with confirmation modal', async ({ page }) => {
     const taskName = `Undo Delete ${Date.now()}`;
 
     await page.fill('input[placeholder="What needs to be done?"]', taskName);
@@ -109,7 +105,7 @@ test.describe('Todo App User Scenarios', () => {
     await expect(page.locator('.todo-card', { hasText: taskName })).not.toBeVisible();
 
     await page.click('button:has-text("History")');
-    await expect(page.locator('.ant-drawer')).toBeVisible();
+    await expect(page.locator('text=Action History')).toBeVisible();
     await page.waitForTimeout(1500);
 
     const deletedItem = page.locator('.ant-timeline-item', { hasText: `Deleted "${taskName}"` });
@@ -167,7 +163,7 @@ test.describe('Todo App User Scenarios', () => {
     await page.waitForTimeout(500);
 
     await page.click('button:has-text("History")');
-    await expect(page.locator('.ant-drawer')).toBeVisible();
+    await expect(page.locator('text=Action History')).toBeVisible();
     await page.waitForTimeout(1500);
 
     const deletedItem = page.locator('.ant-timeline-item', { hasText: `Deleted "${taskName}"` });
@@ -178,7 +174,7 @@ test.describe('Todo App User Scenarios', () => {
     await page.goto('/');
 
     await page.click('button:has-text("History")');
-    await expect(page.locator('.ant-drawer')).toBeVisible();
+    await expect(page.locator('text=Action History')).toBeVisible();
     await page.waitForTimeout(1500);
 
     const restoredItem = page.locator('.ant-timeline-item', { hasText: `Restored "${taskName}"` });

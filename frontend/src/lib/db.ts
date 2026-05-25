@@ -22,59 +22,109 @@ function getDbPath(): string {
 }
 
 export function getDb(): Database.Database {
-  if (_db) return _db;
+  if (!_db) {
+    _db = new Database(getDbPath());
+    _db.pragma('journal_mode = WAL');
+    _db.pragma('foreign_keys = ON');
 
-  _db = new Database(getDbPath());
-  _db.pragma('journal_mode = WAL');
-  _db.pragma('foreign_keys = ON');
+    _db.exec(`
+      CREATE TABLE IF NOT EXISTS categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      CREATE TABLE IF NOT EXISTS todos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        text TEXT NOT NULL,
+        completed INTEGER NOT NULL DEFAULT 0,
+        categoryId INTEGER NOT NULL,
+        createdAt TEXT NOT NULL DEFAULT (datetime('now')),
+        updatedAt TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (categoryId) REFERENCES categories(id)
+      );
+      CREATE TABLE IF NOT EXISTS action_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        action TEXT NOT NULL,
+        todoId INTEGER,
+        todoText TEXT NOT NULL,
+        categoryName TEXT,
+        metadata TEXT,
+        createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      CREATE TABLE IF NOT EXISTS tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      CREATE TABLE IF NOT EXISTS todo_tags (
+        todoId INTEGER NOT NULL,
+        tagId INTEGER NOT NULL,
+        PRIMARY KEY (todoId, tagId),
+        FOREIGN KEY (todoId) REFERENCES todos(id) ON DELETE CASCADE,
+        FOREIGN KEY (tagId) REFERENCES tags(id) ON DELETE CASCADE
+      );
+    `);
+  }
 
-  _db.exec(`
-    CREATE TABLE IF NOT EXISTS categories (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL UNIQUE,
-      createdAt TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-    CREATE TABLE IF NOT EXISTS todos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      text TEXT NOT NULL,
-      completed INTEGER NOT NULL DEFAULT 0,
-      categoryId INTEGER NOT NULL,
-      createdAt TEXT NOT NULL DEFAULT (datetime('now')),
-      updatedAt TEXT NOT NULL DEFAULT (datetime('now')),
-      FOREIGN KEY (categoryId) REFERENCES categories(id)
-    );
-    CREATE TABLE IF NOT EXISTS action_logs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      action TEXT NOT NULL,
-      todoId INTEGER,
-      todoText TEXT NOT NULL,
-      categoryName TEXT,
-      metadata TEXT,
-      createdAt TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-    CREATE TABLE IF NOT EXISTS tags (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL UNIQUE,
-      createdAt TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-    CREATE TABLE IF NOT EXISTS todo_tags (
-      todoId INTEGER NOT NULL,
-      tagId INTEGER NOT NULL,
-      PRIMARY KEY (todoId, tagId),
-      FOREIGN KEY (todoId) REFERENCES todos(id) ON DELETE CASCADE,
-      FOREIGN KEY (tagId) REFERENCES tags(id) ON DELETE CASCADE
-    );
-  `);
+  ensureSeeded();
+  return _db;
+}
 
-  const count = _db.prepare('SELECT COUNT(*) as cnt FROM categories').get() as { cnt: number };
-  if (count.cnt === 0) {
+function ensureSeeded(): void {
+  if (!_db) return;
+
+  const catCount = _db.prepare('SELECT COUNT(*) as cnt FROM categories').get() as { cnt: number };
+  if (catCount.cnt === 0) {
     const insert = _db.prepare('INSERT INTO categories (name) VALUES (?)');
     insert.run('Work');
     insert.run('Personal');
     insert.run('Shopping');
   }
 
-  return _db;
+  const todoCount = _db.prepare('SELECT COUNT(*) as cnt FROM todos').get() as { cnt: number };
+  if (todoCount.cnt === 0) {
+    const categories = _db.prepare('SELECT id, name FROM categories ORDER BY name').all() as { id: number; name: string }[];
+    const catMap: Record<string, number> = {};
+    for (const c of categories) catMap[c.name] = c.id;
+
+    const seedTodos: { text: string; categoryId: number; tags?: string[] }[] = [];
+    if (catMap.Work) {
+      seedTodos.push({ text: 'Finish quarterly report', categoryId: catMap.Work, tags: ['urgent', 'report'] });
+      seedTodos.push({ text: 'Review team pull requests', categoryId: catMap.Work, tags: ['review', 'team'] });
+      seedTodos.push({ text: 'Prepare presentation slides', categoryId: catMap.Work });
+    }
+    if (catMap.Personal) {
+      seedTodos.push({ text: 'Buy groceries for the week', categoryId: catMap.Personal, tags: ['shopping', 'weekly'] });
+      seedTodos.push({ text: 'Read Clean Code book', categoryId: catMap.Personal, tags: ['books', 'learning'] });
+    }
+    if (catMap.Shopping) {
+      seedTodos.push({ text: 'Order new desk lamp', categoryId: catMap.Shopping, tags: ['office'] });
+      seedTodos.push({ text: 'Compare laptop prices', categoryId: catMap.Shopping });
+    }
+
+    if (seedTodos.length > 0) {
+      const insertTodo = _db.prepare(
+        "INSERT INTO todos (text, completed, categoryId, createdAt, updatedAt) VALUES (?, 0, ?, datetime('now'), datetime('now'))",
+      );
+      const insertLog = _db.prepare(
+        "INSERT INTO action_logs (action, todoId, todoText, categoryName, createdAt) VALUES (?, ?, ?, ?, datetime('now'))",
+      );
+      const insertTag = _db.prepare('INSERT OR IGNORE INTO tags (name) VALUES (?)');
+      const insertTodoTag = _db.prepare('INSERT OR IGNORE INTO todo_tags (todoId, tagId) VALUES (?, (SELECT id FROM tags WHERE name = ?))');
+      for (const t of seedTodos) {
+        const result = insertTodo.run(t.text, t.categoryId);
+        const cat = categories.find((c) => c.id === t.categoryId);
+        insertLog.run('created', result.lastInsertRowid, t.text, cat?.name ?? null);
+        if (t.tags && t.tags.length > 0) {
+          for (const tagName of t.tags) {
+            insertTag.run(tagName);
+            insertTodoTag.run(result.lastInsertRowid, tagName);
+          }
+        }
+      }
+    }
+  }
+
 }
 
 export function mapTodo(row: Record<string, unknown>): TodoRow {

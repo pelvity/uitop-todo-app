@@ -16,7 +16,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function CreateTodoForm() {
-  const { categories, createTodo } = useTodos();
+  const { categories, tags, createTodo } = useTodos();
   const [loading, setLoading] = React.useState(false);
   const [tagsInput, setTagsInput] = React.useState<string[]>([]);
   const [catManagerOpen, setCatManagerOpen] = React.useState(false);
@@ -149,6 +149,7 @@ export default function CreateTodoForm() {
               value={tagsInput}
               onChange={setTagsInput}
               tokenSeparators={[',', ' ', ';']}
+              options={tags.map((t) => ({ label: t.name, value: t.name }))}
               tagRender={(props) => (
                 <Tag
                   closable={props.closable}
