@@ -1,7 +1,7 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Button, Drawer, Timeline, Typography, Space, Spin, Empty, Tag, Flex,
+  Button, Drawer, Timeline, Typography, Spin, Empty, Tag, Flex, Badge, Tooltip, Modal, message,
 } from 'antd';
 import {
   HistoryOutlined,
@@ -12,6 +12,9 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons';
 import { useActionLogs } from '@/hooks/useActionLogs';
+import { useTodos } from '@/context/TodoContext';
+import * as api from '@/lib/api';
+import type { ActionLog } from '@/types';
 
 const actionConfig: Record<string, { color: string; icon: React.ReactNode }> = {
   created: { color: 'green', icon: <PlusCircleOutlined /> },
@@ -30,25 +33,75 @@ function formatTime(dateStr: string): string {
 
 export default function HistorySidebar() {
   const { logs, loading, error, refresh } = useActionLogs();
+  const { todos, fetchTodos } = useTodos();
   const [open, setOpen] = useState(false);
+  const [lastViewedAt, setLastViewedAt] = useState<number>(() => Date.now());
+
+  // Refetch logs when todos change to keep history sidebar and badge up-to-date
+  useEffect(() => {
+    refresh();
+  }, [todos, refresh]);
+
+  const unseenCount = logs.filter((log) => {
+    const time = new Date(log.createdAt).getTime();
+    return time > lastViewedAt;
+  }).length;
+
+  const performUndo = async (log: ActionLog) => {
+    try {
+      const res = await api.undoActionLog(log.id);
+      message.success(res.message);
+      refresh();
+      await fetchTodos();
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Undo failed');
+    }
+  };
+
+  const handleUndoClick = (log: ActionLog) => {
+    if (log.action === 'deleted') {
+      Modal.confirm({
+        title: 'Undo deletion?',
+        content: `This will recreate the task "${log.todoText}". Continue?`,
+        okText: 'Recreate',
+        cancelText: 'Cancel',
+        onOk: () => performUndo(log),
+      });
+    } else {
+      performUndo(log);
+    }
+  };
 
   return (
     <>
-      <Button
-        type="text"
-        size="large"
-        icon={<HistoryOutlined />}
-        onClick={() => setOpen(true)}
-        style={{ borderRadius: 12, fontSize: 16, fontWeight: 500 }}
-      >
-        History
-      </Button>
+      <Tooltip title="View action history">
+        <Badge count={unseenCount} size="small" offset={[-8, 4]} style={{ background: '#2E7D4F' }}>
+          <Button
+            type="text"
+            size="large"
+            icon={<HistoryOutlined />}
+            onClick={() => {
+              setOpen(true);
+              setLastViewedAt(Date.now());
+            }}
+            className="history-btn"
+            style={{ borderRadius: 12, fontSize: 16, fontWeight: 500 }}
+          >
+            History
+          </Button>
+        </Badge>
+      </Tooltip>
       <Drawer
-        title="Action History"
+        title={
+          <Flex align="center" gap={8}>
+            <HistoryOutlined style={{ color: '#1A4444' }} />
+            <span>Action History</span>
+          </Flex>
+        }
         placement="right"
         onClose={() => setOpen(false)}
         open={open}
-        width={400}
+        size="large"
         extra={
           <Button icon={<ReloadOutlined />} onClick={refresh} loading={loading} size="small" style={{ borderRadius: 12 }}>
             Refresh
@@ -59,6 +112,9 @@ export default function HistorySidebar() {
             Total: {logs.length} actions
           </Typography.Text>
         }
+        style={{
+          borderTop: '4px solid #1A4444',
+        }}
       >
         {loading && logs.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 40 }}><Spin size="large" /></div>
@@ -75,7 +131,7 @@ export default function HistorySidebar() {
                 dot: config.icon,
                 children: (
                   <>
-                    <Typography.Text strong>
+                    <Typography.Text strong style={{ color: '#1E3A3A' }}>
                       {log.action === 'created' && `Created "${log.todoText}"`}
                       {log.action === 'completed' && `Completed "${log.todoText}"`}
                       {log.action === 'uncompleted' && `Uncompleted "${log.todoText}"`}
@@ -89,6 +145,22 @@ export default function HistorySidebar() {
                       </Typography.Text>
                       {log.categoryName && (
                         <Tag style={{ borderRadius: 12, fontSize: 11, margin: 0 }}>{log.categoryName}</Tag>
+                      )}
+                      {log.action !== 'restored' && (
+                        <Button
+                          type="link"
+                          size="small"
+                          icon={<UndoOutlined />}
+                          onClick={() => handleUndoClick(log)}
+                          style={{
+                            padding: '0 4px',
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: log.action === 'deleted' ? '#C86060' : log.action === 'completed' ? '#3A80D9' : '#2E7D4F',
+                          }}
+                        >
+                          Undo
+                        </Button>
                       )}
                     </Flex>
                   </>

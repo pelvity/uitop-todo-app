@@ -1,5 +1,5 @@
 'use client';
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import type { Todo, Category } from '@/types';
 import * as api from '@/lib/api';
 
@@ -11,9 +11,11 @@ interface TodoContextValue {
   error: string | null;
   selectedCategoryId: number | 'all';
   selectedTodoIds: Set<number>;
+  searchQuery: string;
 
   // Filter
   setSelectedCategory: (id: number | 'all') => void;
+  setSearchQuery: (q: string) => void;
 
   // CRUD
   fetchTodos: () => Promise<void>;
@@ -42,6 +44,7 @@ export function TodoProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | 'all'>('all');
   const [selectedTodoIds, setSelectedTodoIds] = useState<Set<number>>(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchTodos = useCallback(async () => {
     try {
@@ -134,29 +137,52 @@ export function TodoProvider({ children }: { children: React.ReactNode }) {
     setSelectedTodoIds(new Set());
   }, []);
 
+  const value = useMemo(() => ({
+    todos,
+    categories,
+    loading,
+    error,
+    selectedCategoryId,
+    selectedTodoIds,
+    searchQuery,
+    setSelectedCategory,
+    setSearchQuery,
+    fetchTodos,
+    fetchCategories,
+    createTodo,
+    toggleComplete,
+    deleteTodo,
+    restoreTodo,
+    undoDelete,
+    toggleSelectTodo,
+    toggleSelectAll,
+    bulkCompleteSelected,
+    clearSelection,
+  }), [
+    todos,
+    categories,
+    loading,
+    error,
+    selectedCategoryId,
+    selectedTodoIds,
+    searchQuery,
+    setSelectedCategory,
+    setSearchQuery,
+    fetchTodos,
+    fetchCategories,
+    createTodo,
+    toggleComplete,
+    deleteTodo,
+    restoreTodo,
+    undoDelete,
+    toggleSelectTodo,
+    toggleSelectAll,
+    bulkCompleteSelected,
+    clearSelection,
+  ]);
+
   return (
-    <TodoContext.Provider
-      value={{
-        todos,
-        categories,
-        loading,
-        error,
-        selectedCategoryId,
-        selectedTodoIds,
-        setSelectedCategory,
-        fetchTodos,
-        fetchCategories,
-        createTodo,
-        toggleComplete,
-        deleteTodo,
-        restoreTodo,
-        undoDelete,
-        toggleSelectTodo,
-        toggleSelectAll,
-        bulkCompleteSelected,
-        clearSelection,
-      }}
-    >
+    <TodoContext.Provider value={value}>
       {children}
     </TodoContext.Provider>
   );

@@ -2,6 +2,8 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,6 +19,7 @@ export class TodosService {
     @InjectRepository(Todo)
     private readonly todoRepo: Repository<Todo>,
     private readonly categoriesService: CategoriesService,
+    @Inject(forwardRef(() => ActionLogsService))
     private readonly actionLogsService: ActionLogsService,
   ) {}
 

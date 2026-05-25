@@ -26,7 +26,7 @@ describe('CategoryFilter', () => {
     render(<CategoryFilter />, { wrapper: TestWrapper });
 
     await waitFor(() => {
-      expect(screen.getByText('Filter:')).toBeInTheDocument();
+      expect(screen.getByText('All Categories')).toBeInTheDocument();
     });
 
     const selectInput = screen.getByRole('combobox');
@@ -34,9 +34,9 @@ describe('CategoryFilter', () => {
     selectContainer.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
 
     await waitFor(() => {
-      const options = screen.getAllByRole('option');
-      expect(options.length).toBeGreaterThanOrEqual(2);
-      const optionTexts = options.map((o) => o.getAttribute('aria-label'));
+      const optionItems = document.querySelectorAll('.ant-select-item-option-content');
+      const optionTexts = Array.from(optionItems).map((o) => o.textContent);
+      expect(optionTexts.length).toBeGreaterThanOrEqual(2);
       expect(optionTexts).toContain('All Categories');
       expect(optionTexts).toContain('Work');
     });
@@ -46,7 +46,7 @@ describe('CategoryFilter', () => {
     render(<CategoryFilter />, { wrapper: TestWrapper });
 
     await waitFor(() => {
-      expect(screen.getByText('Filter:')).toBeInTheDocument();
+      expect(screen.getByText('All Categories')).toBeInTheDocument();
     });
 
     const user = userEvent.setup();

@@ -38,4 +38,7 @@ export const deleteTodo = (id: number): Promise<void> =>
 export const getActionLogs = (limit: number = 50): Promise<ActionLog[]> =>
   api.get('/action-logs', { params: { limit } }).then((r) => r.data);
 
+export const undoActionLog = (id: number): Promise<{ todo?: Todo; message: string; actionLog: ActionLog }> =>
+  api.post(`/action-logs/${id}/undo`).then((r) => r.data);
+
 export default api;

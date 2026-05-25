@@ -26,7 +26,7 @@ describe('CreateTodoForm', () => {
     render(<CreateTodoForm />, { wrapper: TestWrapper });
 
     await waitFor(() => {
-      expect(screen.getByText('✨ New Task')).toBeInTheDocument();
+      expect(screen.getByText('New Task')).toBeInTheDocument();
     });
 
     expect(screen.getByPlaceholderText('What needs to be done?')).toBeInTheDocument();
