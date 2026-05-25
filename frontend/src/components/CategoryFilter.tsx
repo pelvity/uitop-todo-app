@@ -13,6 +13,7 @@ export default function CategoryFilter() {
 
   return (
     <Select
+      data-testid="categoryFilter"
       value={selectedCategoryId}
       onChange={(val) => setSelectedCategory(val as number | 'all')}
       options={options}

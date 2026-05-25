@@ -1,10 +1,9 @@
 'use client';
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
-import type { Todo, Category } from '@/types';
+import type { Todo, Category, Tag } from '@/types';
 import * as api from '@/lib/api';
 
 interface TodoContextValue {
-  // State
   todos: Todo[];
   categories: Category[];
   loading: boolean;
@@ -12,23 +11,22 @@ interface TodoContextValue {
   selectedCategoryId: number | 'all';
   selectedTodoIds: Set<number>;
   searchQuery: string;
-
-  // Filter
   setSelectedCategory: (id: number | 'all') => void;
   setSearchQuery: (q: string) => void;
-
-  // CRUD
   fetchTodos: () => Promise<void>;
   fetchCategories: () => Promise<void>;
-  createTodo: (text: string, categoryId: number) => Promise<Todo>;
+  createTodo: (text: string, categoryId: number, tags?: string[]) => Promise<Todo>;
   toggleComplete: (id: number, completed: boolean) => Promise<void>;
   deleteTodo: (id: number) => Promise<void>;
-
-  // Undo helpers (called from useUndoNotification)
+  createCategory: (name: string) => Promise<Category>;
+  updateCategory: (id: number, name: string) => Promise<Category>;
+  deleteCategory: (id: number) => Promise<void>;
+  tags: Tag[];
+  fetchTags: () => Promise<void>;
+  createTag: (name: string) => Promise<Tag>;
+  deleteTag: (id: number) => Promise<void>;
   restoreTodo: (id: number) => Promise<void>;
   undoDelete: (todo: Todo) => Promise<void>;
-
-  // Bulk
   toggleSelectTodo: (id: number) => void;
   toggleSelectAll: () => void;
   bulkCompleteSelected: () => Promise<void>;
@@ -45,6 +43,7 @@ export function TodoProvider({ children }: { children: React.ReactNode }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | 'all'>('all');
   const [selectedTodoIds, setSelectedTodoIds] = useState<Set<number>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const fetchTodos = useCallback(async () => {
     try {
@@ -70,8 +69,8 @@ export function TodoProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const createTodo = useCallback(async (text: string, categoryId: number): Promise<Todo> => {
-    const todo = await api.createTodo(text, categoryId);
+  const createTodo = useCallback(async (text: string, categoryId: number, tags?: string[]): Promise<Todo> => {
+    const todo = await api.createTodo(text, categoryId, tags);
     setTodos((prev) => [todo, ...prev]);
     return todo;
   }, []);
@@ -123,10 +122,46 @@ export function TodoProvider({ children }: { children: React.ReactNode }) {
     setSelectedTodoIds(new Set());
   }, []);
 
-  // Load initial data
+  const fetchTags = useCallback(async () => {
+    try {
+      const data = await api.getTags();
+      setTags(data);
+    } catch {
+    }
+  }, []);
+
+  const createCategoryCb = useCallback(async (name: string): Promise<Category> => {
+    const category = await api.createCategory(name);
+    setCategories((prev) => [...prev, category]);
+    return category;
+  }, []);
+
+  const updateCategoryCb = useCallback(async (id: number, name: string): Promise<Category> => {
+    const category = await api.updateCategory(id, name);
+    setCategories((prev) => prev.map((c) => (c.id === id ? category : c)));
+    return category;
+  }, []);
+
+  const deleteCategoryCb = useCallback(async (id: number) => {
+    await api.deleteCategory(id);
+    setCategories((prev) => prev.filter((c) => c.id !== id));
+  }, []);
+
+  const createTagCb = useCallback(async (name: string): Promise<Tag> => {
+    const tag = await api.createTag(name);
+    setTags((prev) => [...prev, tag]);
+    return tag;
+  }, []);
+
+  const deleteTagCb = useCallback(async (id: number) => {
+    await api.deleteTag(id);
+    setTags((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]);
+    fetchTags();
+  }, [fetchCategories, fetchTags]);
 
   useEffect(() => {
     fetchTodos();
@@ -158,9 +193,17 @@ export function TodoProvider({ children }: { children: React.ReactNode }) {
     toggleSelectAll,
     bulkCompleteSelected,
     clearSelection,
+    createCategory: createCategoryCb,
+    updateCategory: updateCategoryCb,
+    deleteCategory: deleteCategoryCb,
+    tags,
+    fetchTags,
+    createTag: createTagCb,
+    deleteTag: deleteTagCb,
   }), [
     todos,
     categories,
+    tags,
     loading,
     error,
     selectedCategoryId,
@@ -179,6 +222,12 @@ export function TodoProvider({ children }: { children: React.ReactNode }) {
     toggleSelectAll,
     bulkCompleteSelected,
     clearSelection,
+    createCategoryCb,
+    updateCategoryCb,
+    deleteCategoryCb,
+    fetchTags,
+    createTagCb,
+    deleteTagCb,
   ]);
 
   return (
