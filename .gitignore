@@ -50,3 +50,6 @@ coverage/
 # Root dev dependency lockfile (concurrently only — not app-critical)
 # Frontend/backend lockfiles are tracked (they lock actual app deps)
 /package-lock.json
+
+# Production secrets & SQLite databases
+# Ensure no local database (.db, .sqlite) or environment secrets (.env*) are committed to VCS.
