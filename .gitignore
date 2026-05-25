@@ -53,3 +53,4 @@ coverage/
 
 # Production secrets & SQLite databases
 # Ensure no local database (.db, .sqlite) or environment secrets (.env*) are committed to VCS.
+.vercel
